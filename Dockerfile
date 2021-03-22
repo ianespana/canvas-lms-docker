@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Update Ubuntu software repository and install dependencies
 RUN apt-get update -y && apt-get install -y gnupg2 dirmngr
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7
-RUN apt-get update -y && apt-get install -y nano wget curl libapache2-mod-passenger apache2 python software-properties-common apt-transport-https ca-certificates
+RUN apt-get update -y && apt-get install -y nano wget curl libapache2-mod-passenger apache2 python software-properties-common apt-transport-https ca-certificates ssmtp
 
 # Install Redis
 RUN add-apt-repository ppa:chris-lea/redis-server
@@ -70,7 +70,7 @@ RUN a2enmod ssl
 RUN ln -s /var/canvas/script/canvas_init /etc/init.d/canvas_init
 RUN update-rc.d canvas_init defaults
 
-# Copy the sample config files
+# Copy the sample config files, override with our own for certain cases
 RUN for config in amazon_s3 database \
     delayed_jobs domain file_store outgoing_mail security external_migration; \
     do cp config/$config.yml.example config/$config.yml; done
@@ -98,10 +98,39 @@ RUN bundle exec rake --trace canvas:compile_assets
 RUN chown -R canvasuser public/dist/brandable_css
 
 # Expose HTTP, HTTPS and POSTGRES ports
-EXPOSE 80 443 5432
+EXPOSE 80
 RUN unlink /etc/apache2/sites-enabled/000-default.conf
+
+# Add all necessary permissions
 RUN chown canvasuser config/*.yml && chmod 400 config/*.yml
-#CMD tail -f /dev/null
+
+# Copy all premade config files and add their example ENV vars
 COPY ./start.sh /var/canvas/start.sh
 RUN chmod +x /var/canvas/start.sh
+COPY ./config/database.yml /var/canvas/config/database.yml
+COPY ./config/domain.yml /var/canvas/config/domain.yml
+COPY ./config/security.yml /var/canvas/config/security.yml
+COPY ./config/outgoing_mail.yml /var/canvas/config/outgoing_mail.yml
+COPY ./config/redis.yml /var/canvas/config/redis.yml
+COPY ./config/cache_store.yml /var/canvas/config/cache_store.yml
+COPY ./config/canvas_no_ssl.conf /etc/apache2/sites-enabled/canvas.conf
+COPY ./config/ssmtp.conf /etc/ssmtp/ssmtp.conf
+ENV DOMAIN=www.example.com
+ENV CANVAS_LMS_ADMIN_EMAIL=admin@example.com
+ENV CANVAS_LMS_ACCOUNT_NAME=admin
+ENV CANVAS_LMS_ADMIN_PASSWORD=admin123456
+ENV EMAIL_DOMAIN=example.com
+ENV EMAIL_OUTGOING_ADDRESS=canvas@example.com
+ENV EMAIL_FROM="Instructure Canvas"
+ENV ENCRYPTION_KEY=12345678901234567890
+ENV DATABASE_NAME=canvas_production
+ENV DATABASE_NAME_QUEUE=canvas_queue_production
+ENV DATABASE_HOST=localhost
+ENV DATABASE_USERNAME=canvas
+ENV DATABASE_PASSWORD='canvas'
+ENV CUSTOM_PORT=''
+ENV CANVAS_LMS_STATS_COLLECTION=anonymized
+ENV EMAIL_ADDRESS=172.17.0.1
+ENV EMAIL_PORT=25
+
 ENTRYPOINT ["bash", "/var/canvas/start.sh"]
