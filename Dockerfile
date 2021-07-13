@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Update Ubuntu software repository and install dependencies
 RUN apt-get update -y && apt-get install -y gnupg2 dirmngr
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 561F9B9CAC40B2F7
-RUN apt-get update -y && apt-get install -y nano wget curl libapache2-mod-passenger apache2 python software-properties-common apt-transport-https ca-certificates ssmtp
+RUN apt-get update -y && apt-get install -y nano wget curl libapache2-mod-passenger apache2 python software-properties-common apt-transport-https ca-certificates ssmtp pwgen
 
 # Install Redis
 RUN add-apt-repository ppa:chris-lea/redis-server
@@ -49,8 +49,8 @@ RUN apt-get install -y ruby2.6 ruby2.6-dev zlib1g-dev libxml2-dev \
     libxmlsec1-dev make g++
 
 # Install Bundler
-RUN gem install bundler --version 2.2.11
-RUN bundle _2.2.11_ install --path vendor/bundle
+RUN gem install bundler --version 2.2.19
+RUN bundle _2.2.19_ install --without pulsar --path vendor/bundle
 
 # Install Yarn
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
@@ -113,6 +113,7 @@ COPY ./config/security.yml /var/canvas/config/security.yml
 COPY ./config/outgoing_mail.yml /var/canvas/config/outgoing_mail.yml
 COPY ./config/redis.yml /var/canvas/config/redis.yml
 COPY ./config/cache_store.yml /var/canvas/config/cache_store.yml
+COPY ./overrides/big_blue_button_conference.rb /var/canvas/app/models/big_blue_button_conference.rb
 COPY ./config/canvas_no_ssl.conf /etc/apache2/sites-enabled/canvas.conf
 COPY ./config/ssmtp.conf /etc/ssmtp/ssmtp.conf
 ENV DOMAIN=www.example.com
@@ -122,7 +123,7 @@ ENV CANVAS_LMS_ADMIN_PASSWORD=admin123456
 ENV EMAIL_DOMAIN=example.com
 ENV EMAIL_OUTGOING_ADDRESS=canvas@example.com
 ENV EMAIL_FROM="Instructure Canvas"
-ENV ENCRYPTION_KEY=12345678901234567890
+ENV ENCRYPTION_KEY=123456789101112131415
 ENV DATABASE_NAME=canvas_production
 ENV DATABASE_NAME_QUEUE=canvas_queue_production
 ENV DATABASE_HOST=localhost
