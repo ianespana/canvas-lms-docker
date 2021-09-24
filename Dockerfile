@@ -113,17 +113,23 @@ COPY ./config/security.yml /var/canvas/config/security.yml
 COPY ./config/outgoing_mail.yml /var/canvas/config/outgoing_mail.yml
 COPY ./config/redis.yml /var/canvas/config/redis.yml
 COPY ./config/cache_store.yml /var/canvas/config/cache_store.yml
+COPY ./config/amazon_s3.yml /var/canvas/config/amazon_s3.yml
+COPY ./config/file_store.yml /var/canvas/config/file_store.yml
 COPY ./overrides/big_blue_button_conference.rb /var/canvas/app/models/big_blue_button_conference.rb
+COPY ./overrides/conferences_controller.rb /var/canvas/app/controllers/conferences_controller.rb
 COPY ./config/canvas_no_ssl.conf /etc/apache2/sites-enabled/canvas.conf
 COPY ./config/ssmtp.conf /etc/ssmtp/ssmtp.conf
 ENV DOMAIN=www.example.com
 ENV CANVAS_LMS_ADMIN_EMAIL=admin@example.com
 ENV CANVAS_LMS_ACCOUNT_NAME=admin
-ENV CANVAS_LMS_ADMIN_PASSWORD=admin123456
+ENV CANVAS_LMS_ADMIN_PASSWORD=REPLACEME
 ENV EMAIL_DOMAIN=example.com
 ENV EMAIL_OUTGOING_ADDRESS=canvas@example.com
 ENV EMAIL_FROM="Instructure Canvas"
-ENV ENCRYPTION_KEY=123456789101112131415
+ENV ENCRYPTION_KEY=REPLACEME
+ENV AWS_BUCKET_NAME=REPLACEME
+ENV AWS_ACCESS_KEY_ID=REPLACEME
+ENV AWS_SECRET_ACCESS_KEY=REPLACEME
 ENV DATABASE_NAME=canvas_production
 ENV DATABASE_NAME_QUEUE=canvas_queue_production
 ENV DATABASE_HOST=localhost
